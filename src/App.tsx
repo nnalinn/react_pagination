@@ -1,24 +1,40 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
 import { getNumbers } from './utils';
 import { Pagination } from './components/Pagination/Pagination';
+import { useSearchParams } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const items = getNumbers(1, 42).map(n => `Item ${n}`);
 
 export const App: React.FC = () => {
-  const [page, setPage] = React.useState(1);
-  const [perPage, setPerPage] = useState(5);
-
   const total = items.length;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const page = Number(searchParams.get('page')) || 1;
+  const perPage = Number(searchParams.get('perPage')) || 5;
 
   const start = (page - 1) * perPage;
   const end = start + perPage;
-
   const visibleItems = items.slice(start, end);
 
   const startItem = start + 1;
   const endItem = Math.min(end, total);
+
+  const handlePageChange = (newPage: number) => {
+    setSearchParams({
+      page: String(newPage),
+      perPage: String(perPage),
+    });
+  };
+
+  const handlePerPageChange = (value: number) => {
+    setSearchParams({
+      page: '1',
+      perPage: String(value),
+    });
+  };
 
   return (
     <div className="container">
@@ -35,10 +51,7 @@ export const App: React.FC = () => {
             id="perPageSelector"
             className="form-control"
             value={perPage}
-            onChange={e => {
-              setPerPage(Number(e.target.value));
-              setPage(1);
-            }}
+            onChange={(e) => handlePerPageChange(Number(e.target.value))}
           >
             <option value="3">3</option>
             <option value="5">5</option>
@@ -53,10 +66,10 @@ export const App: React.FC = () => {
       </div>
 
       <Pagination
-        total={items.length}
+        total={total}
         perPage={perPage}
         currentPage={page}
-        onPageChange={setPage}
+        onPageChange={handlePageChange}
       />
 
       <ul>
@@ -69,5 +82,3 @@ export const App: React.FC = () => {
     </div>
   );
 };
-
-export default App;
